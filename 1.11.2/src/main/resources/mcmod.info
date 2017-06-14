@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
+  "modid": "entity_hoppers",
+  "name": "Entity Hoppers",
+  "description": "Adds a type of hopper that takes items from entities",
+  "version": "0.1.0-1.11.2",
+  "mcversion": "1.11.2",
   "url": "",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["Wyn Price"],
+  "credits": "",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
