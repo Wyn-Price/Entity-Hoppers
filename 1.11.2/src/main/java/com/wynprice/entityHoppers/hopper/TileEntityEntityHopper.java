@@ -386,9 +386,14 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         			for(Slot slot : player.inventoryContainer.inventorySlots)
         			{
         				ItemStack item = new ItemStack(player.inventoryContainer.inventoryItemStacks.get(slot.slotNumber).getItem());
+        				item.setItemDamage(player.inventoryContainer.inventoryItemStacks.get(slot.slotNumber).getItemDamage());
         				if(item.getItem() != Item.getItemFromBlock(Blocks.AIR))
         				{
-            				putStackInInventoryAllSlots((IInventory)null, hopper, item,  (EnumFacing)null, true);
+            				System.out.println(player.inventoryContainer.inventoryItemStacks);
+
+        					NBTTagCompound nbt = player.inventoryContainer.inventoryItemStacks.get(slot.slotNumber).getTagCompound();
+        					item.setTagCompound(nbt);
+        					putStackInInventoryAllSlots((IInventory)null, hopper, item,  (EnumFacing)null, true);
             				player.inventoryContainer.getSlot(slot.slotNumber).decrStackSize(1);
             				break;
         				}
