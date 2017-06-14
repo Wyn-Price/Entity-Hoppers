@@ -47,13 +47,7 @@ public class MainRegistry
 	public static void Init(FMLInitializationEvent e)
 	{
 		proxy.Init(e);
-		GameRegistry.addShapedRecipe(new ItemStack(RegisterHopper.Entity_Hopper),
-				"oeo",
-				"ehe",
-				" o ",
-				'o', Blocks.OBSIDIAN,
-				'e', Items.ENDER_EYE,
-				'h', Blocks.HOPPER);
+		GameRegistry.addShapelessRecipe(new ItemStack(RegisterHopper.Entity_Hopper), new Object[] { Blocks.HOPPER, Items.ENDER_EYE});
 	}
 	
 	@EventHandler
