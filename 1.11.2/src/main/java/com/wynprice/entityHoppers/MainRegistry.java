@@ -36,7 +36,7 @@ public class MainRegistry
 	@EventHandler
 	public static void PreInit(FMLPreInitializationEvent e)
 	{
-		getlogger().info("Playing that noteblock nicely");
+		getlogger().info("Summoning the dark lord to do my bidding");
 		proxy.PreInit(e);
 		RegisterHopper.Init();
 		RegisterHopper.reg();
@@ -47,7 +47,7 @@ public class MainRegistry
 	public static void Init(FMLInitializationEvent e)
 	{
 		proxy.Init(e);
-		GameRegistry.addShapedRecipe(new ItemStack(RegisterHopper.Entity_Hopper,2),
+		GameRegistry.addShapedRecipe(new ItemStack(RegisterHopper.Entity_Hopper),
 				"oeo",
 				"ehe",
 				" o ",
