@@ -20,6 +20,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.IHopper;
@@ -385,12 +386,13 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         			for(Slot slot : player.inventoryContainer.inventorySlots)
         			{
         				ItemStack item = new ItemStack(player.inventoryContainer.inventoryItemStacks.get(slot.slotNumber).getItem());
-        				if(Block.getBlockFromItem(item.getItem()) != Blocks.AIR)
+        				if(item.getItem() != Item.getItemFromBlock(Blocks.AIR))
         				{
             				putStackInInventoryAllSlots((IInventory)null, hopper, item,  (EnumFacing)null, true);
             				player.inventoryContainer.getSlot(slot.slotNumber).decrStackSize(1);
             				break;
         				}
+
         				
         			}
         		}
