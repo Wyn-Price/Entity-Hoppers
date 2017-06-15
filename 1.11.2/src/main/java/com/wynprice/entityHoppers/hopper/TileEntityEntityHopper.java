@@ -495,13 +495,13 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         
     private static boolean takeItemsFromInventory(ItemStack itemIn, IHopper hopper)
     {
-    	for(int i = 0; i < hopper.getSizeInventory(); i++)
-    	{
-    		System.out.println(i);
-    	}
+    	
     	ItemStack item = new ItemStack(itemIn.getItem());
 		item.setItemDamage(itemIn.getItemDamage());
-		if(item.getItem() != Item.getItemFromBlock(Blocks.AIR))
+		ArrayList<Boolean> isAdd = new ArrayList<Boolean>();
+		for(int i = 0; i < hopper.getSizeInventory(); i++)
+			isAdd.add(getOwnInventory(hopper).getStackInSlot(i).getItem() == Item.getItemFromBlock(Blocks.AIR) ||(getOwnInventory(hopper).getStackInSlot(i).getItem() == itemIn.getItem() && getOwnInventory(hopper).getStackInSlot(i).getCount() < getOwnInventory(hopper).getStackInSlot(i).getItem().getItemStackLimit()));
+		if(item.getItem() != Item.getItemFromBlock(Blocks.AIR) && isAdd.contains(true))
 		{
 			NBTTagCompound nbt =itemIn.getTagCompound();
 			item.setTagCompound(nbt);
@@ -832,6 +832,11 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
     public static IInventory getHopperInventory(IHopper hopper)
     {
         return getInventoryAtPosition(hopper.getWorld(), hopper.getXPos(), hopper.getYPos() + 1.0D, hopper.getZPos());
+    }
+    
+    public static IInventory getOwnInventory(IHopper hopper)
+    {
+    	return getInventoryAtPosition(hopper.getWorld(), hopper.getXPos(), hopper.getYPos(), hopper.getZPos());
     }
 
     public static List<EntityItem> getCaptureItems(World worldIn, double p_184292_1_, double p_184292_3_, double p_184292_5_)
