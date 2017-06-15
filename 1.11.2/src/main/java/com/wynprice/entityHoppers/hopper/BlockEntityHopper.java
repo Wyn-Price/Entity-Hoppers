@@ -151,7 +151,6 @@ public class BlockEntityHopper extends BlockContainer
             if (tileentity instanceof TileEntityEntityHopper)
             {
                 playerIn.displayGUIChest((TileEntityEntityHopper)tileentity);
-                playerIn.addStat(StatList.HOPPER_INSPECTED);
             }
 
             return true;
@@ -170,12 +169,14 @@ public class BlockEntityHopper extends BlockContainer
 
     private void updateState(World worldIn, BlockPos pos, IBlockState state)
     {
+    	/*
         boolean flag = !worldIn.isBlockPowered(pos);
-
         if (flag != ((Boolean)state.getValue(ENABLED)).booleanValue())
         {
             worldIn.setBlockState(pos, state.withProperty(ENABLED, Boolean.valueOf(flag)), 4);
         }
+        */
+
     }
 
     /**
