@@ -1,0 +1,4 @@
+tile.EntityHopperBlock.name=Entity Hopper
+itemGroup.tabEntityHopper=Entity Hopper Creative Menu
+container.entityhopper=Entity Hopper
+version=[Entity Hoppers] New version of mod relased. You are on version %s, while the recommended version is %s

@@ -1,0 +1,15 @@
+{
+    "variants": {
+        "enabled=false,facing=down": { "model": "entity_hoppers:entityhopper_down" },
+        "enabled=false,facing=north": { "model": "entity_hoppers:entityhopper_side" },
+        "enabled=false,facing=south": { "model": "entity_hoppers:entityhopper_side", "y": 180 },
+        "enabled=false,facing=west": { "model": "entity_hoppers:entityhopper_side", "y": 270 },
+        "enabled=false,facing=east": { "model": "entity_hoppers:entityhopper_side", "y": 90 },
+		
+		"enabled=true,facing=down": { "model": "entity_hoppers:entityhopper_down" },
+        "enabled=true,facing=north": { "model": "entity_hoppers:entityhopper_side" },
+        "enabled=true,facing=south": { "model": "entity_hoppers:entityhopper_side", "y": 180 },
+        "enabled=true,facing=west": { "model": "entity_hoppers:entityhopper_side", "y": 270 },
+        "enabled=true,facing=east": { "model": "entity_hoppers:entityhopper_side", "y": 90 }
+    }
+}
