@@ -3,7 +3,7 @@
   "modid": "entity_hoppers",
   "name": "Entity Hoppers",
   "description": "Adds a type of hopper that takes items from entities",
-  "version": "0.1.0-1.11.2",
+  "version": "0.2.0-1.11.2",
   "mcversion": "1.11.2",
   "url": "",
   "updateUrl": "",
