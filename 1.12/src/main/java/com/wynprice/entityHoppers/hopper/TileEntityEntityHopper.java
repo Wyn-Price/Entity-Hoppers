@@ -16,6 +16,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityEvoker;
+import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntitySkeleton;
 import net.minecraft.entity.monster.EntityStray;
 import net.minecraft.entity.monster.EntityVindicator;
@@ -58,11 +59,11 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
 {
 	private static ArrayList<String> useEntities = new ArrayList<String>(Arrays.asList(
 			"EntityWitherSkeleton", "EntityZombie", "EntityWitch", "EntityEnderman", "EntitySkeleton",
-			"EntityStray", "EntityEvoker", "EntityVindicator", "EntityZombieVillager"));
+			"EntityStray", "EntityEvoker", "EntityVindicator", "EntityZombieVillager", "EntityPigZombie"));
 	
 	private static Item[] possibleVoidItems = {
 			Items.STONE_SWORD, null, null, null, Items.BOW,
-			null, null, null, null};
+			null, null, null, null, Items.GOLDEN_SWORD};
     private NonNullList<ItemStack> inventory = NonNullList.<ItemStack>withSize(5, ItemStack.EMPTY);
     private int transferCooldown = -1;
     private long tickedGameTime;
@@ -426,49 +427,10 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
             				}
             					
         			}
-        			else if(entity instanceof EntityZombie)
-        			{
-        				EntityZombie zombie = (EntityZombie) entity;
-        				ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(zombie.getHeldItemMainhand(), zombie.getHeldItemOffhand()));
-            			for(int i = 0; i < 2; i ++)
-            				if(takeItemsFromInventory(items.get(i), hopper))
-            				{
-            					ItemStack repaceItem = items.get(i);
-            					repaceItem.setCount(repaceItem.getCount() - 1);
-            					zombie.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, items.get(i));
-            					break;
-            				}
-            					
-        			}
-        			else if(entity instanceof EntitySkeleton)
-        			{
-        				EntitySkeleton skeleton = (EntitySkeleton) entity;
-        				ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(skeleton.getHeldItemMainhand(), skeleton.getHeldItemOffhand()));
-        				ItemStack itemBowDrop = null;
-            			for(int i = 0; i < 2; i ++)
-            			{
-            				itemBowDrop = items.get(i);
-            				if(items.get(i).getItem() == Items.BOW)
-            				{
-            					itemBowDrop.setCount(0);
-            					if(new Random().nextInt(10) + 1 == 1)
-            					{
-            						itemBowDrop.setCount(1);
-            						itemBowDrop.setItemDamage(Items.BOW.getMaxDamage() - new Random().nextInt(40));
-            					}
-            				}
-            				if(takeItemsFromInventory(itemBowDrop, hopper))
-            				{
-            					ItemStack repaceItem = itemBowDrop;
-            					repaceItem.setCount(repaceItem.getCount() - 1);
-            					skeleton.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, itemBowDrop);
-            					break;
-            				}
-            			}		
-        			}
-        			else if(entity instanceof EntityWitherSkeleton)
+        			else if(useEntities.contains(entity.getClass().getSimpleName()))
         			{
         				getItemsFromEntityInventoryTwoHands(hopper, (EntityLivingBase) entity, possibleVoidItems[useEntities.indexOf(entity.getClass().getSimpleName())]);
+        				break;
         			}		
         		}
         		
