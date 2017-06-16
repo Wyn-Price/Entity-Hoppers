@@ -3,6 +3,7 @@ package com.wynprice.entityHoppers.hopper;
 import java.rmi.server.Skeleton;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -11,10 +12,18 @@ import javax.annotation.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityEvoker;
+import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntityStray;
+import net.minecraft.entity.monster.EntityVindicator;
+import net.minecraft.entity.monster.EntityWitch;
 import net.minecraft.entity.monster.EntityWitherSkeleton;
 import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.monster.EntityZombieVillager;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -48,6 +57,13 @@ import net.minecraft.world.World;
 
 public class TileEntityEntityHopper extends TileEntityLockableLoot implements IHopper, ITickable
 {
+	private static ArrayList<String> useEntities = new ArrayList<String>(Arrays.asList(
+			"EntityWitherSkeleton", "EntityZombie", "EntityWitch", "EntityEnderman", "EntitySkeleton",
+			"EntityStray", "EntityEvoker", "EntityVindicator", "EntityZombieVillager", "EntityPigZombie"));
+	
+	private static Item[] possibleVoidItems = {
+			Items.STONE_SWORD, null, null, null, Items.BOW,
+			null, null, null, null, Items.GOLDEN_SWORD};
     private NonNullList<ItemStack> inventory = NonNullList.<ItemStack>withSize(5, ItemStack.EMPTY);
     private int transferCooldown = -1;
     private long tickedGameTime;
@@ -385,7 +401,7 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         {
         	for(Entity entity : hopper.getWorld().loadedEntityList)
         	{
-        		if(entity.getDistance(hopper.getXPos(), hopper.getYPos(), hopper.getZPos()) < 0.7f)
+        		if(Math.floor(hopper.getXPos()) == Math.floor(entity.posX) && (Math.floor(hopper.getYPos()) == Math.floor(entity.posY) || Math.floor(hopper.getYPos()) == Math.floor(entity.posY) - 1) && Math.floor(hopper.getZPos()) == Math.floor(entity.posZ))
         		{
         			if(entity instanceof EntityPlayer)
         			{
@@ -411,71 +427,10 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
             				}
             					
         			}
-        			else if(entity instanceof EntityZombie)
+        			else if(useEntities.contains(entity.getClass().getSimpleName()))
         			{
-        				EntityZombie zombie = (EntityZombie) entity;
-        				ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(zombie.getHeldItemMainhand(), zombie.getHeldItemOffhand()));
-            			for(int i = 0; i < 2; i ++)
-            				if(takeItemsFromInventory(items.get(i), hopper))
-            				{
-            					ItemStack repaceItem = items.get(i);
-            					repaceItem.setCount(repaceItem.getCount() - 1);
-            					zombie.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, items.get(i));
-            					break;
-            				}
-            					
-        			}
-        			else if(entity instanceof EntitySkeleton)
-        			{
-        				EntitySkeleton skeleton = (EntitySkeleton) entity;
-        				ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(skeleton.getHeldItemMainhand(), skeleton.getHeldItemOffhand()));
-        				ItemStack itemBowDrop = null;
-            			for(int i = 0; i < 2; i ++)
-            			{
-            				itemBowDrop = items.get(i);
-            				if(items.get(i).getItem() == Items.BOW)
-            				{
-            					itemBowDrop.setCount(0);
-            					if(new Random().nextInt(10) + 1 == 1)
-            					{
-            						itemBowDrop.setCount(1);
-            						itemBowDrop.setItemDamage(Items.BOW.getMaxDamage() - new Random().nextInt(40));
-            					}
-            				}
-            				if(takeItemsFromInventory(itemBowDrop, hopper))
-            				{
-            					ItemStack repaceItem = itemBowDrop;
-            					repaceItem.setCount(repaceItem.getCount() - 1);
-            					skeleton.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, itemBowDrop);
-            					break;
-            				}
-            			}		
-        			}
-        			else if(entity instanceof EntityWitherSkeleton)
-        			{
-        				EntityWitherSkeleton witherSkeleton = (EntityWitherSkeleton) entity;
-        				ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(witherSkeleton.getHeldItemMainhand(), witherSkeleton.getHeldItemOffhand()));
-        				ItemStack itemBowDrop = null;
-            			for(int i = 0; i < 2; i ++)
-            			{
-            				itemBowDrop = items.get(i);
-            				if(items.get(i).getItem() == Items.STONE_SWORD)
-            				{
-            					itemBowDrop.setCount(0);
-            					if(new Random().nextInt(10) + 1 == 1)
-            					{
-            						itemBowDrop.setCount(1);
-            						itemBowDrop.setItemDamage(Items.STONE_SWORD.getMaxDamage() - new Random().nextInt(40));
-            					}
-            				}
-            				if(takeItemsFromInventory(itemBowDrop, hopper))
-            				{
-            					ItemStack repaceItem = itemBowDrop;
-            					repaceItem.setCount(repaceItem.getCount() - 1);
-            					witherSkeleton.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, itemBowDrop);
-            					break;
-            				}
-            			}		
+        				getItemsFromEntityInventoryTwoHands(hopper, (EntityLivingBase) entity, possibleVoidItems[useEntities.indexOf(entity.getClass().getSimpleName())]);
+        				break;
         			}		
         		}
         		
@@ -491,6 +446,30 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         }
 
         return false;
+    }
+    
+    private static void getItemsFromEntityInventoryTwoHands(IHopper hopper, EntityLivingBase entity, @Nullable Item voidItem)
+    {
+    	ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(entity.getHeldItemMainhand(), entity.getHeldItemOffhand()));
+		for(int i = 0; i < 2; i ++)
+		{
+			ItemStack item = items.get(i);
+			if(items.get(i).getItem() == voidItem)
+			{
+				item.setCount(0);
+				if(new Random().nextInt(10) + 1 == 1)
+				{
+					item.setCount(1);
+					item.setItemDamage(voidItem.getMaxDamage() - new Random().nextInt(40));
+				}
+			}
+			if(takeItemsFromInventory(item, hopper))
+			{
+				ItemStack repaceItem = item;
+				repaceItem.setCount(repaceItem.getCount() - 1);
+				entity.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, item);
+			}
+		}	
     }
         
     private static boolean takeItemsFromInventory(ItemStack itemIn, IHopper hopper)
@@ -509,8 +488,9 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
 			return true;
 		}
 		return false;
-
     }
+    
+   
 
     /**
      * Pulls from the specified slot in the inventory and places in any available slot in the hopper. Returns true if
@@ -659,11 +639,8 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
                         if (inventoryIn != null && inventoryIn instanceof TileEntityEntityHopper)
                         {
                             TileEntityEntityHopper tileentityhopper = (TileEntityEntityHopper)inventoryIn;
-
                             if (tileentityhopper1.tickedGameTime >= tileentityhopper.tickedGameTime)
-                            {
-                                k = 1;
-                            }
+                            	k = 1;
                         }
 
                         tileentityhopper1.setTransferCooldown(8 - k);
@@ -696,136 +673,58 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         for(Entity entity : world.getLoadedEntityList())
         {
         	ArrayList<String> positions = new ArrayList<String>(Arrays.asList(pos.toString(), pos2.toString(), pos3.toString()));
-        	if(entity instanceof EntityWitherSkeleton)
+        	if(Arrays.asList("EntityWitherSkeleton", "EntityEnderman").contains(entity.getClass().getSimpleName()))
         	{
         		positions.remove(2);
         		positions.add((new BlockPos(this.getXPos() + (double)enumfacing.getFrontOffsetX(), this.getYPos() + (double)enumfacing.getFrontOffsetY() - 2 , this.getZPos() + (double)enumfacing.getFrontOffsetZ())).toString());
-        		positions.add(new BlockPos(this.getXPos(), this.getYPos() - 2, this.getZPos()).toString());
+        		positions.add(new BlockPos(this.getXPos(), this.getYPos() - 3, this.getZPos()).toString());
         	}
         	if(positions.contains(entity.getPosition().toString()))
         	{
         		if(entity instanceof EntityPlayer)
-        		{
-        			EntityPlayer player = (EntityPlayer) entity;
-        			return player.inventory;
-        		}
+        			return ((EntityPlayer) entity).inventory;
         		if(entity instanceof EntityVillager)
-        		{
-        			EntityVillager villager = (EntityVillager) entity;
-        			return villager.getVillagerInventory();
-        		}
-        		
-        		if(entity instanceof EntitySkeleton)
-        		{
-        			EntitySkeleton skeleton = (EntitySkeleton) entity;
-        			
-        			for (int i = 0; i < this.getSizeInventory();)
-                    {
-                        if (!this.getStackInSlot(i).isEmpty())
-                        {
-                            ItemStack itemstack = this.getStackInSlot(i).copy();
-                            Boolean flag = false;
-                            if(skeleton.getHeldItemMainhand().isEmpty() || (skeleton.getHeldItemMainhand().getCount() < skeleton.getHeldItemMainhand().getMaxStackSize() && itemstack.getItem() == skeleton.getHeldItemMainhand().getItem()))
-                            {
-                            	ItemStack giveItem = itemstack.copy();
-                            	giveItem.setCount(skeleton.getHeldItemMainhand().getCount() + 1);
-                            	skeleton.setHeldItem(EnumHand.MAIN_HAND, giveItem);
-                            	flag = true;
-                            }
-                            else if(!flag && skeleton.getHeldItemOffhand().isEmpty() || (skeleton.getHeldItemOffhand().getCount() < skeleton.getHeldItemOffhand().getMaxStackSize() && itemstack.getItem() == skeleton.getHeldItemOffhand().getItem()))
-                            {
-                            	ItemStack giveItem = itemstack.copy();
-                            	giveItem.setCount(skeleton.getHeldItemOffhand().getCount() + 1);
-                            	skeleton.setHeldItem(EnumHand.OFF_HAND, giveItem);
-                            	flag = true;
-                            }
-                            if(flag)
-                            {
-                            	ItemStack returnItemStack = itemstack.copy();
-                                returnItemStack.setCount(returnItemStack.getCount() - 1);
-                                this.setInventorySlotContents(i, returnItemStack);
-                                this.setTransferCooldown(8);
-                            }
-                        }
-                        return null;
-                    }
-        		}
-        		
-        		if(entity instanceof EntityZombie)
-        		{
-        			EntityZombie zombie = (EntityZombie) entity;
-        			for (int i = 0; i < this.getSizeInventory();)
-                    {
-                        if (!this.getStackInSlot(i).isEmpty())
-                        {
-                            ItemStack itemstack = this.getStackInSlot(i).copy();
-                            Boolean flag = false;
-                            if(zombie.getHeldItemMainhand().isEmpty() || (zombie.getHeldItemMainhand().getCount() < zombie.getHeldItemMainhand().getMaxStackSize() && itemstack.getItem() == zombie.getHeldItemMainhand().getItem()))
-                            {
-                            	ItemStack giveItem = itemstack.copy();
-                            	giveItem.setCount(zombie.getHeldItemMainhand().getCount() + 1);
-                            	zombie.setHeldItem(EnumHand.MAIN_HAND, giveItem);
-                            	flag = true;
-                            }
-                            else if(!flag && zombie.getHeldItemOffhand().isEmpty() || (zombie.getHeldItemOffhand().getCount() < zombie.getHeldItemOffhand().getMaxStackSize() && itemstack.getItem() == zombie.getHeldItemOffhand().getItem()))
-                            {
-                            	ItemStack giveItem = itemstack.copy();
-                            	giveItem.setCount(zombie.getHeldItemOffhand().getCount() + 1);
-                            	zombie.setHeldItem(EnumHand.OFF_HAND, giveItem);
-                            	flag = true;
-                            }
-                            if(flag)
-                            {
-                            	ItemStack returnItemStack = itemstack.copy();
-                                returnItemStack.setCount(returnItemStack.getCount() - 1);
-                                this.setInventorySlotContents(i, returnItemStack);
-                                this.setTransferCooldown(8);
-                            }
-                        }
-                        return null;
-                    }	
-        		}
-        		
-        		if(entity instanceof EntityWitherSkeleton)
-        		{
-        			EntityWitherSkeleton witherSkeleton = (EntityWitherSkeleton) entity;
-        			
-        			for (int i = 0; i < this.getSizeInventory();)
-                    {
-                        if (!this.getStackInSlot(i).isEmpty())
-                        {
-                            ItemStack itemstack = this.getStackInSlot(i).copy();
-                            Boolean flag = false;
-                            if(witherSkeleton.getHeldItemMainhand().isEmpty() || (witherSkeleton.getHeldItemMainhand().getCount() < witherSkeleton.getHeldItemMainhand().getMaxStackSize() && itemstack.getItem() == witherSkeleton.getHeldItemMainhand().getItem()))
-                            {
-                            	ItemStack giveItem = itemstack.copy();
-                            	giveItem.setCount(witherSkeleton.getHeldItemMainhand().getCount() + 1);
-                            	witherSkeleton.setHeldItem(EnumHand.MAIN_HAND, giveItem);
-                            	flag = true;
-                            }
-                            else if(!flag && witherSkeleton.getHeldItemOffhand().isEmpty() || (witherSkeleton.getHeldItemOffhand().getCount() < witherSkeleton.getHeldItemOffhand().getMaxStackSize() && itemstack.getItem() == witherSkeleton.getHeldItemOffhand().getItem()))
-                            {
-                            	ItemStack giveItem = itemstack.copy();
-                            	giveItem.setCount(witherSkeleton.getHeldItemOffhand().getCount() + 1);
-                            	witherSkeleton.setHeldItem(EnumHand.OFF_HAND, giveItem);
-                            	flag = true;
-                            }
-                            if(flag)
-                            {
-                            	ItemStack returnItemStack = itemstack.copy();
-                                returnItemStack.setCount(returnItemStack.getCount() - 1);
-                                this.setInventorySlotContents(i, returnItemStack);
-                                this.setTransferCooldown(8);
-                            }
-                        }
-                        return null;
-                    }
-        		}
+        			return ((EntityVillager) entity).getVillagerInventory();
+        		if(useEntities.contains(entity.getClass().getSimpleName()))
+        			giveItemsToEntityNoInventory((EntityLivingBase) entity);
         	}
         }
 		return null;
     }
-
+    
+     private void giveItemsToEntityNoInventory(EntityLivingBase entity)
+     {
+    	 for (int i = 0; i < this.getSizeInventory(); i++)
+         {
+             if (!this.getStackInSlot(i).isEmpty())
+             {
+                 ItemStack itemstack = this.getStackInSlot(i).copy();
+                 Boolean flag = false;
+                 if(entity.getHeldItemMainhand().isEmpty() || (entity.getHeldItemMainhand().getCount() < entity.getHeldItemMainhand().getMaxStackSize() && itemstack.getItem() == entity.getHeldItemMainhand().getItem()))
+                 {
+                 	ItemStack giveItem = itemstack.copy();
+                 	giveItem.setCount(entity.getHeldItemMainhand().getCount() + 1);
+                 	entity.setHeldItem(EnumHand.MAIN_HAND, giveItem);
+                 	flag = true;
+                 }
+                 else if(!flag && entity.getHeldItemOffhand().isEmpty() || (entity.getHeldItemOffhand().getCount() < entity.getHeldItemOffhand().getMaxStackSize() && itemstack.getItem() == entity.getHeldItemOffhand().getItem()))
+                 {
+                 	ItemStack giveItem = itemstack.copy();
+                 	giveItem.setCount(entity.getHeldItemOffhand().getCount() + 1);
+                 	entity.setHeldItem(EnumHand.OFF_HAND, giveItem);
+                 	flag = true;
+                 }
+                 if(flag)
+                 {
+                 	ItemStack returnItemStack = itemstack.copy();
+                     returnItemStack.setCount(returnItemStack.getCount() - 1);
+                     this.setInventorySlotContents(i, returnItemStack);
+                     this.setTransferCooldown(8);
+                 }
+             }
+         }
+     }
+    
     /**
      * Returns the IInventory for the specified hopper
      */
