@@ -1,9 +1,7 @@
 package com.wynprice.entityHoppers.hopper;
 
-import java.rmi.server.Skeleton;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -14,16 +12,9 @@ import net.minecraft.block.BlockChest;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityEvoker;
 import net.minecraft.entity.monster.EntityPigZombie;
 import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.monster.EntityStray;
-import net.minecraft.entity.monster.EntityVindicator;
-import net.minecraft.entity.monster.EntityWitch;
 import net.minecraft.entity.monster.EntityWitherSkeleton;
-import net.minecraft.entity.monster.EntityZombie;
-import net.minecraft.entity.monster.EntityZombieVillager;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -57,13 +48,13 @@ import net.minecraft.world.World;
 
 public class TileEntityEntityHopper extends TileEntityLockableLoot implements IHopper, ITickable
 {
-	private static ArrayList<String> useEntities = new ArrayList<String>(Arrays.asList(
-			"EntityWitherSkeleton", "EntityZombie", "EntityWitch", "EntityEnderman", "EntitySkeleton",
-			"EntityStray", "EntityEvoker", "EntityVindicator", "EntityZombieVillager", "EntityPigZombie"));
 	
-	private static Item[] possibleVoidItems = {
-			Items.STONE_SWORD, null, null, null, Items.BOW,
-			null, null, null, null, Items.GOLDEN_SWORD};
+	private static final ArrayList<String> entityVoidPickup = new ArrayList<String>(Arrays.asList("EntitySkeleton EntityPigZombie EntityWitherSkeleton".split(" ")));
+	private static final ArrayList<Item> entityVoidPickupItem = new ArrayList<Item>(Arrays.asList(Items.BOW, Items.GOLDEN_SWORD, Items.STONE_SWORD));
+	private static final ArrayList<String> entityReplace = new ArrayList<String>(Arrays.asList("EntityCow".split(" ")));
+	private static final ArrayList<Item> entityReplaceItem = new ArrayList<Item>(Arrays.asList(Items.BUCKET));
+	private static final ArrayList<Item> entityItemReplace = new ArrayList<Item>(Arrays.asList(Items.MILK_BUCKET));
+	
     private NonNullList<ItemStack> inventory = NonNullList.<ItemStack>withSize(5, ItemStack.EMPTY);
     private int transferCooldown = -1;
     private long tickedGameTime;
@@ -427,10 +418,25 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
             				}
             					
         			}
-        			else if(useEntities.contains(entity.getClass().getSimpleName()))
+        			else if(entity instanceof EntityLivingBase)
         			{
-        				getItemsFromEntityInventoryTwoHands(hopper, (EntityLivingBase) entity, possibleVoidItems[useEntities.indexOf(entity.getClass().getSimpleName())]);
-        				break;
+        				@Nullable Item item = null;
+        				@Nullable Item replaceItem = null;
+        				@Nullable Item Itemreplace = null;
+        				try
+        				{
+        					item = entityVoidPickupItem.get(entityVoidPickup.indexOf(entity.getClass().getSimpleName()));
+        				}
+        				catch (ArrayIndexOutOfBoundsException e) {
+						}
+        				
+        				int i = entityVoidPickup.indexOf(entity.getClass().getSimpleName());
+        				if(i != -1)
+        				{
+        					replaceItem = entityReplaceItem.get(i);
+        					Itemreplace = entityItemReplace.get(i);
+        				}
+        				getItemsFromEntityInventoryTwoHands(hopper, (EntityLivingBase) entity, item);
         			}		
         		}
         		
@@ -448,28 +454,40 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         return false;
     }
     
-    private static void getItemsFromEntityInventoryTwoHands(IHopper hopper, EntityLivingBase entity, @Nullable Item voidItem)
+    private static void getItemsFromEntityInventoryTwoHands(IHopper hopper, EntityLivingBase entity, @Nullable Item voidItem, @Nullable Item itemToReplace, @Nullable Item replacementItem)
     {
     	ArrayList<ItemStack> items = new ArrayList<ItemStack>(Arrays.asList(entity.getHeldItemMainhand(), entity.getHeldItemOffhand()));
 		for(int i = 0; i < 2; i ++)
 		{
+			ItemStack repaceItem = items.get(i);
 			ItemStack item = items.get(i);
-			if(items.get(i).getItem() == voidItem)
+			if(replacementItem != null && itemToReplace != item.getItem())
 			{
-				item.setCount(0);
-				if(new Random().nextInt(10) + 1 == 1)
+				if(items.get(i).getItem() == voidItem)
 				{
-					item.setCount(1);
-					item.setItemDamage(voidItem.getMaxDamage() - new Random().nextInt(40));
+					item.setCount(0);
+					if(new Random().nextInt(10) + 1 == 1)
+					{
+						item.setCount(1);
+						item.setItemDamage(voidItem.getMaxDamage() - new Random().nextInt(40));
+					}
 				}
 			}
+			else
+				item = new ItemStack(replacementItem);
+				
 			if(takeItemsFromInventory(item, hopper))
 			{
-				ItemStack repaceItem = item;
 				repaceItem.setCount(repaceItem.getCount() - 1);
 				entity.setHeldItem(i == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND, item);
 			}
-		}	
+			
+		}
+    }
+    
+    private static void getItemsFromEntityInventoryTwoHands(IHopper hopper, EntityLivingBase entity, @Nullable Item voidItem)
+    {
+    	getItemsFromEntityInventoryTwoHands(hopper, entity, voidItem, null, null);
     }
         
     private static boolean takeItemsFromInventory(ItemStack itemIn, IHopper hopper)
@@ -683,9 +701,9 @@ public class TileEntityEntityHopper extends TileEntityLockableLoot implements IH
         	{
         		if(entity instanceof EntityPlayer)
         			return ((EntityPlayer) entity).inventory;
-        		if(entity instanceof EntityVillager)
+        		else if(entity instanceof EntityVillager)
         			return ((EntityVillager) entity).getVillagerInventory();
-        		if(useEntities.contains(entity.getClass().getSimpleName()))
+        		else if(entity instanceof EntityLivingBase)
         			giveItemsToEntityNoInventory((EntityLivingBase) entity);
         	}
         }

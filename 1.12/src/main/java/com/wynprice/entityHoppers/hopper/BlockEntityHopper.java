@@ -62,6 +62,7 @@ public class BlockEntityHopper extends BlockContainer
         this.setRegistryName(References.MODID, "EntityHopper");
         this.setUnlocalizedName("EntityHopperBlock");
     }
+   
 
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
     {
