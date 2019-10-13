@@ -10,6 +10,7 @@ ehthumbs.db
 !/1.12
 /1.12/*
 !/1.12/src
+!README.md
 
 # Folder config file
 Desktop.ini
